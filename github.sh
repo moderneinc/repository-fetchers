@@ -11,4 +11,4 @@ organization=$1
 # JQ
 gh repo list "$organization" \
     --json url,defaultBranchRef \
-    --jq  '["cloneUrl","branch"], (.[] | [.url, .defaultBranchRef.name]) | @csv'
+    --jq  '["cloneUrl","branch","org"], (.[] | [.url, .defaultBranchRef.name, "'"$organization"'"]) | @csv'

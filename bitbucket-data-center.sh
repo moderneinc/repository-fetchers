@@ -20,7 +20,7 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-echo "cloneUrl,branch"
+echo "cloneUrl,branch,org"
 for REPO in $ALL_REPOS; do
     IFS=',' read -r repo project cloneUrl <<< "$REPO"
     repo="${repo//\"/}"
@@ -28,5 +28,5 @@ for REPO in $ALL_REPOS; do
     cloneUrl="${cloneUrl//\"/}"
     branch=$(curl -s -X GET -H "Content-Type: application/json" -H "$auth_header" "$bitbucket_url/rest/api/latest/projects/$project/repos/$repo/default-branch" | jq -r '.displayId')
 
-    echo "$cloneUrl,$branch"
+    echo "$cloneUrl,$branch,$project"
 done

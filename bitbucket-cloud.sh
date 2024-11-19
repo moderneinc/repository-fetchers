@@ -32,7 +32,7 @@ if [ -z "$username" -o -z "$app_password" -o -z "$workspace" ]; then
     usage
 fi
 
-echo "cloneUrl,branch"
+echo "cloneUrl,branch,org"
 
 next_page="https://api.bitbucket.org/2.0/repositories/$workspace"
 
@@ -44,11 +44,13 @@ while [ "$next_page" ]; do
     .values[] |
     (.links.clone[] | select(.name=="https") | .href) as $cloneUrl |
     .mainbranch.name as $branchName |
-    "\($cloneUrl),\($branchName)"' |
-  while IFS=, read -r cloneUrl branchName; do
+    .workspace.name as $organization |
+    "\($cloneUrl),\($branchName),\($organization)"' |
+  while IFS=, read -r cloneUrl branchName organization; do
     cleanUrl=$(echo "$cloneUrl" | sed -E 's|https://[^@]+@|https://|')
-    echo "$cleanUrl,$branchName"
+    echo "$cleanUrl,$branchName,$organization"
   done
+
 
   next_page=$(echo "$response" | sed -e "s:${username}@::g" | jq -r '.next // empty')
 done
