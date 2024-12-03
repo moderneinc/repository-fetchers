@@ -18,13 +18,13 @@ https://github.com/openrewrite/rewrite-gradle-tooling-model,main
 https://github.com/openrewrite/rewrite-recipe-bom,main
 ```
 
-Below are the details of each script along with examples of how to invoke them and their required/optional arguments.
-
 ## Supported SCMs
 * [GitHub](#github)
 * [Bitbucket Data Center](#bitbucket-data-center)
 * [Bitbucket Cloud](#bitbucket-cloud)
 * [GitLab](#gitlab)
+
+Below are the details of each script along with examples of how to invoke them and their required/optional arguments.
 
 ### GitHub
 
