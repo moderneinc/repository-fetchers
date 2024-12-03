@@ -1,6 +1,30 @@
 ## Repository Fetchers
 
-This directory contains scripts that can be used to fetch repositories. Below are the details of each script along with examples of how to invoke them and their required/optional arguments.
+This directory contains scripts that query a source code manager (SCM) to create a CSV file that contains a list of repositories and their details. This list of repositories can then be used for easy cloning with the [Moderne CLI](https://docs.moderne.io/user-documentation/moderne-cli/getting-started/cli-intro) or it can be used to help you create an [Organizations service](https://docs.moderne.io/administrator-documentation/moderne-platform/how-to-guides/organizations-service).
+
+The expected output looks similar to:
+
+```csv
+cloneUrl,branch
+https://github.com/openrewrite/rewrite-spring,main
+https://github.com/openrewrite/rewrite-recipe-markdown-generator,main
+https://github.com/openrewrite/rewrite-docs,master
+https://github.com/openrewrite/rewrite,main
+https://github.com/openrewrite/rewrite-python,main
+https://github.com/openrewrite/rewrite-migrate-java,main
+https://github.com/openrewrite/rewrite-recommendations,main
+https://github.com/openrewrite/rewrite-testing-frameworks,main
+https://github.com/openrewrite/rewrite-gradle-tooling-model,main
+https://github.com/openrewrite/rewrite-recipe-bom,main
+```
+
+Below are the details of each script along with examples of how to invoke them and their required/optional arguments.
+
+## Supported SCMs
+* [GitHub](#github)
+* [Bitbucket Data Center](#bitbucket-data-center)
+* [Bitbucket Cloud](#bitbucket-cloud)
+* [GitLab](#gitlab)
 
 ### GitHub
 
