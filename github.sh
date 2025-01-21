@@ -9,6 +9,5 @@ fi
 organization=$1
 
 # JQ
-gh repo list "$organization" \
-    --json url,defaultBranchRef \
-    --jq  '["cloneUrl","branch","org"], (.[] | [.url, .defaultBranchRef.name, "'"$organization"'"]) | @csv'
+gh api --paginate "orgs/$organization/repos" \
+  --jq '["cloneUrl","branch","org"], (.[] | [.clone_url, .default_branch, "'"$organization"'"]) | @csv'
