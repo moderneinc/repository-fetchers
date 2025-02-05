@@ -9,5 +9,4 @@ fi
 organization=$1
 
 # JQ
-gh api --paginate "orgs/$organization/repos" \
-  --jq '["cloneUrl","branch","org"], (.[] | [.clone_url, .default_branch, "'"$organization"'"]) | @csv'
+gh api --paginate "orgs/$organization/repos" | jq -r 'first(["cloneUrl","branch","org"]), (.[] | [.clone_url, .default_branch, "'"$organization"'"]) | @csv'
