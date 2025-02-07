@@ -32,7 +32,7 @@ if [ -z "$username" -o -z "$app_password" -o -z "$workspace" ]; then
     usage
 fi
 
-echo "cloneUrl,branch,org"
+echo "cloneUrl,branch"
 
 next_page="https://api.bitbucket.org/2.0/repositories/$workspace"
 
@@ -40,17 +40,15 @@ while [ "$next_page" ]; do
   response=$(curl -s -u "$username:$app_password" "$next_page")
 
   # Extract repository data and append to CSV file
-  echo "$response" | jq -r '
+  echo $response | jq -r '
     .values[] |
     (.links.clone[] | select(.name=="https") | .href) as $cloneUrl |
     .mainbranch.name as $branchName |
-    .workspace.name as $organization |
-    "\($cloneUrl),\($branchName),\($organization)"' |
-  while IFS=, read -r cloneUrl branchName organization; do
+    "\($cloneUrl),\($branchName)"' |
+  while IFS=, read -r cloneUrl branchName; do
     cleanUrl=$(echo "$cloneUrl" | sed -E 's|https://[^@]+@|https://|')
-    echo "$cleanUrl,$branchName,$organization"
+    echo "$cleanUrl,$branchName"
   done
 
-
-  next_page=$(echo "$response" | sed -e "s:${username}@::g" | jq -r '.next // empty')
+  next_page=$(echo $response | sed -e "s:${username}@::g" | jq -r '.next // empty')
 done

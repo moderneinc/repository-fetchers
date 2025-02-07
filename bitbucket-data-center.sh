@@ -10,23 +10,34 @@ fi
 bitbucket_url=$1
 auth_header=""
 
-if [ -n "$AUTH_TOKEN" ]; then
-    auth_header="Authorization: Bearer $AUTH_TOKEN"
-fi
-
-ALL_REPOS=$(curl -s -X GET -H "Content-Type: application/json" -H "$auth_header" "$bitbucket_url/rest/api/1.0/repos"| jq -r '.values[] | [.slug, .project.key, (.links.clone[] | select(.name == "http").href)] | @csv')
-if [ $? -ne 0 ]; then
-    echo "Error occurred while retrieving repository list."
+if [ -z "$AUTH_TOKEN" ]; then
+    echo "Please set the AUTH_TOKEN environment variable."
     exit 1
 fi
 
-echo "cloneUrl,branch,org"
-for REPO in $ALL_REPOS; do
-    IFS=',' read -r repo project cloneUrl <<< "$REPO"
-    repo="${repo//\"/}"
-    project="${project//\"/}"
-    cloneUrl="${cloneUrl//\"/}"
-    branch=$(curl -s -X GET -H "Content-Type: application/json" -H "$auth_header" "$bitbucket_url/rest/api/latest/projects/$project/repos/$repo/default-branch" | jq -r '.displayId')
+page=1
+limit=100
+echo '"cloneUrl","branch","org"'
+while :; do
+    # Construct the request URL with pagination parameters
+    request_url="$bitbucket_url/rest/api/1.0/repos?page=$page&limit=100"
 
-    echo "$cloneUrl,$branch,$project"
+    # Fetch the data
+    response=$(curl --silent -H "Content-Type: application/json" -H "Authorization: Bearer $AUTH_TOKEN" "$request_url")
+
+    if [ $? -ne 0 ]; then
+        echo "Error occurred while retrieving repository list."
+        exit 1
+    fi
+
+    # Check if the response is empty, if so, break the loop
+    if [[ $(echo "$response" | jq '. | length') -eq 0 ]]; then
+        break
+    fi
+
+    # Process and output data
+    echo "$response" | jq -r '.values[] | [.slug, .project.key, (.links.clone[] | select(.name == "http").href)] | @csv'
+
+    # Increment page counter
+    ((page++))
 done
