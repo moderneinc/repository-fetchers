@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 if [ -z "$1" ]; then
     echo "Usage: $0 <bitbucket_url>"
     echo "Example: $0 https://my-bitbucket.com/stash"
@@ -15,12 +14,15 @@ if [ -z "$AUTH_TOKEN" ]; then
     exit 1
 fi
 
-page=1
-limit=100
+if [ -z "$CLONE_PROTOCOL" -o "$CLONE_PROTOCOL" != "ssh" ]; then
+    CLONE_PROTOCOL=http
+fi
+
+nextPage=1
 echo '"cloneUrl","branch","org"'
 while :; do
     # Construct the request URL with pagination parameters
-    request_url="$bitbucket_url/rest/api/1.0/repos?page=$page&limit=100"
+    request_url="$bitbucket_url/rest/api/1.0/repos?start=$nextPage&limit=100"
 
     # Fetch the data
     response=$(curl --silent -H "Content-Type: application/json" -H "Authorization: Bearer $AUTH_TOKEN" "$request_url")
@@ -30,14 +32,18 @@ while :; do
         exit 1
     fi
 
-    # Check if the response is empty, if so, break the loop
-    if [[ $(echo "$response" | jq '. | length') -eq 0 ]]; then
-        break
+    # Process and output data
+    if [ "$CLONE_PROTOCOL" = "http" ]; then
+        echo "$response" | jq -r '.values[] | [(.links.clone[] | select(.name == "http").href), .slug, .project.key] | @csv'
+    else 
+        echo "$response" | jq -r '.values[] | [(.links.clone[] | select(.name == "ssh").href), .slug, .project.key] | @csv'
     fi
 
-    # Process and output data
-    echo "$response" | jq -r '.values[] | [.slug, .project.key, (.links.clone[] | select(.name == "http").href)] | @csv'
 
-    # Increment page counter
-    ((page++))
+    isLastPage=$(echo "$response" | jq '. | .isLastPage') 
+    if [ "$isLastPage" = "true" ]; then
+        exit
+    fi
+
+    nextPage=$(echo "$response" | jq '. | .nextPageStart') 
 done
