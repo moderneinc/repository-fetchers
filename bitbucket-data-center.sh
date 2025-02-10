@@ -7,7 +7,6 @@ if [ -z "$1" ]; then
 fi
 
 bitbucket_url=$1
-auth_header=""
 
 if [ -z "$AUTH_TOKEN" ]; then
     echo "Please set the AUTH_TOKEN environment variable."
@@ -18,32 +17,63 @@ if [ -z "$CLONE_PROTOCOL" -o "$CLONE_PROTOCOL" != "ssh" ]; then
     CLONE_PROTOCOL=http
 fi
 
-nextPage=1
-echo '"cloneUrl","branch","org"'
-while :; do
-    # Construct the request URL with pagination parameters
-    request_url="$bitbucket_url/rest/api/1.0/repos?start=$nextPage&limit=100"
+function fetch_default_branch() {
+    local repo_slug=$1
+    local project=$2
+    local next_page=1
+    local last_page="false"
 
-    # Fetch the data
-    response=$(curl --silent -H "Content-Type: application/json" -H "Authorization: Bearer $AUTH_TOKEN" "$request_url")
+    while [ "$last_page" != "true" ] ; do
+        local request_url="$bitbucket_url/rest/api/1.0/projects/$project/repos/$repo_slug/branches?start=$next_page&limit=100"
 
-    if [ $? -ne 0 ]; then
-        echo "Error occurred while retrieving repository list."
-        exit 1
-    fi
+        local response=$(curl --silent -H "Content-Type: application/json" -H "Authorization: Bearer $AUTH_TOKEN" "$request_url")
+        if [ $? -ne 0 ]; then
+            echo "Error occurred while default branch for $repo_slug." 1>&2
+            echo ""
+            return
+        fi
 
-    # Process and output data
-    if [ "$CLONE_PROTOCOL" = "http" ]; then
-        echo "$response" | jq -r '.values[] | [(.links.clone[] | select(.name == "http").href), .slug, .project.key] | @csv'
-    else 
-        echo "$response" | jq -r '.values[] | [(.links.clone[] | select(.name == "ssh").href), .slug, .project.key] | @csv'
-    fi
+        last_page=$(echo "$response" | jq '. | .isLastPage')
+        next_page=$(echo "$response" | jq '. | .nextPageStart') 
 
+        for ROW in `echo "$response" | jq -r '.values[] | [.isDefault, .displayId] | @csv | sub("\"";"";"g")'`; do
+            IFS=", " read -r is_default branch_name <<< $ROW
+            if [ "$is_default" ]; then
+                echo $branch_name
+                return
+            fi
+        done
+    done
 
-    isLastPage=$(echo "$response" | jq '. | .isLastPage') 
-    if [ "$isLastPage" = "true" ]; then
-        exit
-    fi
+    echo "Failed to find default branch for $repo_slug." 1>&2
+    echo ""
+}
 
-    nextPage=$(echo "$response" | jq '. | .nextPageStart') 
-done
+function fetch_repos() {
+    local next_page=1
+    local last_page="false"
+
+    while [ "$last_page" != "true" ] ; do
+        local request_url="$bitbucket_url/rest/api/1.0/repos?start=$next_page&limit=100"
+
+        local response=$(curl --silent -H "Content-Type: application/json" -H "Authorization: Bearer $AUTH_TOKEN" "$request_url")
+        if [ $? -ne 0 ]; then
+            echo "Error occurred while retrieving repository list." 1>&2
+            exit 1
+        fi
+
+        last_page=$(echo "$response" | jq '. | .isLastPage')
+        next_page=$(echo "$response" | jq '. | .nextPageStart') 
+
+        for ROW in `echo "$response" | \
+            jq --arg CLONE_PROTOCOL $CLONE_PROTOCOL -r '.values[] | [(.links.clone[] | select(.name == $CLONE_PROTOCOL).href), .slug, .project.key] | @csv | sub("\"";"";"g")'`; do
+            IFS=", " read -r clone_url repo_slug project <<< $ROW
+            local default_branch=$(fetch_default_branch $repo_slug $project)
+            echo $clone_url,$default_branch
+        done
+    done
+}
+
+echo "cloneUrl,branch"
+fetch_repos
+
