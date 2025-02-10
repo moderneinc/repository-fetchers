@@ -21,9 +21,11 @@ function fetch_default_branch() {
     local repo_slug=$1
     local project=$2
     local next_page=1
+    local last_page="false"
 
-    while :; do
+    while [ "$last_page" != "true" ] ; do
         local request_url="$bitbucket_url/rest/api/1.0/projects/$project/repos/$repo_slug/branches?start=$next_page&limit=100"
+
         local response=$(curl --silent -H "Content-Type: application/json" -H "Authorization: Bearer $AUTH_TOKEN" "$request_url")
         if [ $? -ne 0 ]; then
             echo "Error occurred while default branch for $repo_slug." 1>&2
@@ -31,8 +33,8 @@ function fetch_default_branch() {
             return
         fi
 
-        local last_page=$(echo "$response" | jq '. | .isLastPage')
-        local next_page=$(echo "$response" | jq '. | .nextPageStart') 
+        last_page=$(echo "$response" | jq '. | .isLastPage')
+        next_page=$(echo "$response" | jq '. | .nextPageStart') 
 
         for ROW in `echo "$response" | jq -r '.values[] | [.isDefault, .displayId] | @csv | sub("\"";"";"g")'`; do
             IFS=", " read -r is_default branch_name <<< $ROW
@@ -41,29 +43,27 @@ function fetch_default_branch() {
                 return
             fi
         done
-
-        if [ "$last_page" = "true" ]; then
-            echo "Failed to find default branch for $repo_slug." 1>&2
-            echo ""
-            return
-        fi
     done
+
+    echo "Failed to find default branch for $repo_slug." 1>&2
+    echo ""
 }
 
 function fetch_repos() {
     local next_page=1
-    while :; do
+    local last_page="false"
+
+    while [ "$last_page" != "true" ] ; do
         local request_url="$bitbucket_url/rest/api/1.0/repos?start=$next_page&limit=100"
 
         local response=$(curl --silent -H "Content-Type: application/json" -H "Authorization: Bearer $AUTH_TOKEN" "$request_url")
-
         if [ $? -ne 0 ]; then
             echo "Error occurred while retrieving repository list." 1>&2
             exit 1
         fi
 
-        local last_page=$(echo "$response" | jq '. | .isLastPage')
-        local next_page=$(echo "$response" | jq '. | .nextPageStart') 
+        last_page=$(echo "$response" | jq '. | .isLastPage')
+        next_page=$(echo "$response" | jq '. | .nextPageStart') 
 
         for ROW in `echo "$response" | \
             jq --arg CLONE_PROTOCOL $CLONE_PROTOCOL -r '.values[] | [(.links.clone[] | select(.name == $CLONE_PROTOCOL).href), .slug, .project.key] | @csv | sub("\"";"";"g")'`; do
@@ -71,10 +71,6 @@ function fetch_repos() {
             local default_branch=$(fetch_default_branch $repo_slug $project)
             echo $clone_url,$default_branch
         done
-
-        if [ "$last_page" = "true" ]; then
-            exit
-        fi
     done
 }
 
