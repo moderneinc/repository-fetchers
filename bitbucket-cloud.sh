@@ -32,6 +32,10 @@ if [ -z "$username" -o -z "$app_password" -o -z "$workspace" ]; then
     usage
 fi
 
+if [ -z "$CLONE_PROTOCOL" -o "$CLONE_PROTOCOL" != "ssh" ]; then
+    CLONE_PROTOCOL=https
+fi
+
 echo "cloneUrl,branch"
 
 next_page="https://api.bitbucket.org/2.0/repositories/$workspace"
@@ -40,9 +44,9 @@ while [ "$next_page" ]; do
   response=$(curl -s -u "$username:$app_password" "$next_page")
 
   # Extract repository data and append to CSV file
-  echo $response | jq -r '
+  echo $response | jq --arg CLONE_PROTOCOL $CLONE_PROTOCOL -r '
     .values[] |
-    (.links.clone[] | select(.name=="https") | .href) as $cloneUrl |
+    (.links.clone[] | select(.name == $CLONE_PROTOCOL) | .href) as $cloneUrl |
     .mainbranch.name as $branchName |
     "\($cloneUrl),\($branchName)"' |
   while IFS=, read -r cloneUrl branchName; do
