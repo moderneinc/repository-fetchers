@@ -10,3 +10,4 @@ organization=$1
 
 echo "\"cloneUrl\",\"branch\",\"org\""
 gh api --paginate "orgs/$organization/repos" --jq '.[] | select(.archived == false) | [.clone_url, .default_branch, "'"$organization"'"] | @csv' | sort
+#gh api --paginate "orgs/$organization/repos" --jq '.[] | select(.archived == false) | [.ssh_url, .default_branch, "'"$organization"'"] | @csv' | sort
