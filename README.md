@@ -1,6 +1,6 @@
 ## Repository Fetchers
 
-This directory contains scripts that query a source code manager (SCM) to create a CSV file that contains a list of repositories and their details. This list of repositories can then be used for easy cloning with the [Moderne CLI](https://docs.moderne.io/user-documentation/moderne-cli/getting-started/cli-intro) or it can be used to help you create an [Organizations service](https://docs.moderne.io/administrator-documentation/moderne-platform/how-to-guides/organizations-service).
+This directory contains scripts that query a source code manager (SCM) to create a CSV file that contains a list of repositories and their details. This list of repositories can then be used for easy cloning with the [Moderne CLI](https://docs.moderne.io/user-documentation/moderne-cli/getting-started/cli-intro) or it can be used to help you create an [Organizations service](https://docs.moderne.io/administrator-documentation/moderne-platform/how-to-guides/org-service/).
 
 The expected output looks similar to:
 
