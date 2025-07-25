@@ -105,3 +105,30 @@ To fetch all repositories from a specific group on a custom GitLab domain:
 AUTH_TOKEN=YOUR_TOKEN ./gitlab.sh -g my-group -h https://my-gitlab.com
 ```
 
+### Azure DevOps
+
+This script fetches all repositories from a Azure DevOps organization.
+
+#### Usage
+```sh
+./azure-devops.sh -o <organization> -p <project>
+```
+
+#### Description
+This script fetches all repositories from a Azure DevOps project in the given organization.
+Organization here refers to the tenant, and a project to the level of access controll in Azure.
+One Organization has multiple Projects, which each can contain multiple Repositories.
+
+##### Prerequisites
+
+1. Azure CLI installed, via Brew `brew install azure-cli` or WinGet `winget install Microsoft.AzureCLI`
+2. Azure DevOps Extension added, via Azure CLI `az extension add --name azure-devops`
+3. JQ JSON utility installed, via Brew `brew install jq` or WinGet `winget install jqlang.jq`
+4. Azure CLI mus be locked in `az login` and use has access to the organization and project
+
+#### Example
+To fetch all repositories from a specific group on a custom GitLab domain:
+```sh
+./azure-devops.sh -o <organization> -p <project>
+```
+
