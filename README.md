@@ -123,11 +123,10 @@ One Organization has multiple Projects, which each can contain multiple Reposito
 
 1. Azure CLI installed, via Brew `brew install azure-cli` or WinGet `winget install Microsoft.AzureCLI`
 2. Azure DevOps Extension added, via Azure CLI `az extension add --name azure-devops`
-3. JQ JSON utility installed, via Brew `brew install jq` or WinGet `winget install jqlang.jq`
-4. Azure CLI mus be locked in `az login` and use has access to the organization and project
+3. Azure CLI must be logged in `az login` and user has access to the organization and project
 
 #### Example
-To fetch all repositories from a specific group on a custom GitLab domain:
+To fetch all repositories from an Azure DevOps organization and project:
 ```sh
 ./azure-devops.sh -o <organization> -p <project>
 ```

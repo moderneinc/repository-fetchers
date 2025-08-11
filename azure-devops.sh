@@ -35,5 +35,16 @@ fi
 # Output CSV header
 echo "cloneUrl,branch"
 
-# Fetch repositories and output
-az repos list --organization "https://dev.azure.com/$ORGANIZATION" --project "$PROJECT" --output json | jq -r '.[] | [.sshUrl, (.defaultBranch // "main" | sub("refs/heads/"; ""))] | @csv'
+# Fetch repositories using TSV output and process manually
+az repos list --organization "https://dev.azure.com/$ORGANIZATION" --project "$PROJECT" --output tsv --query '[].{sshUrl: sshUrl, defaultBranch: defaultBranch}' | while IFS=$'\t' read -r ssh_url default_branch; do
+    # Handle cases where defaultBranch might be empty or null
+    if [[ -z "$default_branch" || "$default_branch" == "null" ]]; then
+        branch="main"
+    else
+        # Remove refs/heads/ prefix if present
+        branch="${default_branch#refs/heads/}"
+    fi
+    
+    # Output in CSV format with proper quoting
+    echo "\"$ssh_url\",\"$branch\""
+done
