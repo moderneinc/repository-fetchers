@@ -35,8 +35,6 @@ if [[ -z "$PROJECT" ]]; then
     exit 1
 fi
 
-echo "Fetching repositories from Azure DevOps organization '$ORGANIZATION' and project '$PROJECT' with $(if [[ -n "$USE_HTTPS" ]]; then echo "HTTPS"; else echo "SSH"; fi) URLs..."
-
 # Output CSV header
 echo "cloneUrl,branch"
 
