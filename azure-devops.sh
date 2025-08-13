@@ -7,13 +7,16 @@ usage() {
     echo "Required:"
     echo "  -o  Azure DevOps Organization"
     echo "  -p  Azure DevOps Project"
+    echo "Optional:"
+    echo "  -h  to use HTTPS URLs instead of SSH URLs"
 }
 
 # Parse command-line arguments
-while getopts ":uo:p:" opt; do
+while getopts ":o:p:h" opt; do
   case ${opt} in
     o) ORGANIZATION=$OPTARG;;
     p) PROJECT=$OPTARG;;
+    h) USE_HTTPS=true;;
     *) usage;;
   esac
 done
@@ -32,11 +35,13 @@ if [[ -z "$PROJECT" ]]; then
     exit 1
 fi
 
+echo "Fetching repositories from Azure DevOps organization '$ORGANIZATION' and project '$PROJECT' with $(if [[ -n "$USE_HTTPS" ]]; then echo "HTTPS"; else echo "SSH"; fi) URLs..."
+
 # Output CSV header
 echo "cloneUrl,branch"
 
 # Fetch repositories using TSV output and process manually
-az repos list --organization "https://dev.azure.com/$ORGANIZATION" --project "$PROJECT" --output tsv --query '[].{sshUrl: sshUrl, defaultBranch: defaultBranch}' | while IFS=$'\t' read -r ssh_url default_branch; do
+az repos list --organization "https://dev.azure.com/$ORGANIZATION" --project "$PROJECT" --output tsv --query '[].{sshUrl: sshUrl, defaultBranch: defaultBranch, remoteUrl: remoteUrl}' | while IFS=$'\t' read -r ssh_url default_branch remoteUrl; do
     # Handle cases where defaultBranch might be empty or null
     if [[ -z "$default_branch" || "$default_branch" == "null" ]]; then
         branch="main"
@@ -44,7 +49,11 @@ az repos list --organization "https://dev.azure.com/$ORGANIZATION" --project "$P
         # Remove refs/heads/ prefix if present
         branch="${default_branch#refs/heads/}"
     fi
-    
+
     # Output in CSV format with proper quoting
-    echo "\"$ssh_url\",\"$branch\""
+    if [[ -z "$USE_HTTPS" ]]; then
+      echo "\"$ssh_url\",\"$branch\""
+    else
+      echo "\"$remoteUrl\",\"$branch\""
+    fi
 done
