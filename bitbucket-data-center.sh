@@ -8,9 +8,6 @@ fi
 
 bitbucket_url=$1
 
-CLONE_PROTOCOL="http"
-AUTH_TOKEN="BBDC-MDczMTE0Mjg4MDA3OnzHmz1QvDNVGfrjSzX9+IB0MJpL"
-
 if [ -z "$AUTH_TOKEN" ]; then
     echo "Please set the AUTH_TOKEN environment variable."
     exit 1
@@ -22,8 +19,9 @@ fi
 function fetch_default_branch() {
     local repo_slug=$1
     local project=$2
-    local next_page=1
+    local next_page=0
     local last_page="false"
+    local first_branch=""
 
     while [ "$last_page" != "true" ] ; do
         local request_url="$bitbucket_url/rest/api/1.0/projects/$project/repos/$repo_slug/branches?start=$next_page&limit=100"
@@ -52,6 +50,10 @@ function fetch_default_branch() {
 
         for ROW in `echo "$response" | jq -r '.values[] | [.isDefault, .displayId] | @csv | sub("\"";"";"g")'`; do
             IFS=", " read -r is_default branch_name <<< $ROW
+            # Store first branch as fallback
+            if [ -z "$first_branch" ]; then
+                first_branch="$branch_name"
+            fi
             if [ "$is_default" = "true" ]; then
                 echo $branch_name
                 return
@@ -59,12 +61,18 @@ function fetch_default_branch() {
         done
     done
 
-    echo "Failed to find default branch for $repo_slug." 1>&2
-    echo ""
+    # If no default branch was found but we have branches, use the first one
+    if [ -n "$first_branch" ]; then
+        echo "Warning: No default branch found for $repo_slug, using first branch: $first_branch" 1>&2
+        echo "$first_branch"
+    else
+        echo "Failed to find any branches for $repo_slug." 1>&2
+        echo ""
+    fi
 }
 
 function fetch_repos() {
-    local next_page=1
+    local next_page=0
     local last_page="false"
 
     while [ "$last_page" != "true" ] ; do
