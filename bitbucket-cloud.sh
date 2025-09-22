@@ -1,15 +1,15 @@
 #!/bin/bash
 
 usage() {
-  echo "Usage: $0 -u <username> -p <password> <workspace>"
+  echo "Usage: $0 -t <token> <workspace>"
+  echo "Alternative: Set BITBUCKET_TOKEN environment variable"
   exit 1
 }
 
 # Parse command-line arguments
-while getopts ":u:p:" opt; do
+while getopts ":t:" opt; do
   case ${opt} in
-    u) username=$OPTARG;;
-    p) app_password=$OPTARG;;
+    t) token=$OPTARG;;
     *) usage;;
   esac
 done
@@ -18,17 +18,13 @@ shift $((OPTIND -1))
 # Set workspace from positional argument
 workspace=$1
 
-# Check if username and app_password are provided via command line or environment variables
-if [ -z "$username" ]; then
-    username=$BITBUCKET_USERNAME
+# Check if token is provided via command line or environment variable
+if [ -z "$token" ]; then
+    token=$BITBUCKET_TOKEN
 fi
 
-if [ -z "$app_password" ]; then
-    app_password=$BITBUCKET_APP_PASSWORD
-fi
-
-if [ -z "$username" -o -z "$app_password" -o -z "$workspace" ]; then
-    echo "Error: Please provide username, password, and workspace." >&2
+if [ -z "$token" -o -z "$workspace" ]; then
+    echo "Error: Please provide token and workspace." >&2
     usage
 fi
 
@@ -41,7 +37,7 @@ echo "cloneUrl,branch"
 next_page="https://api.bitbucket.org/2.0/repositories/$workspace"
 
 while [ "$next_page" ]; do
-  response=$(curl -s -u "$username:$app_password" "$next_page")
+  response=$(curl -s -H "Authorization: Bearer $token" "$next_page")
 
   # Extract repository data and append to CSV file
   echo $response | jq --arg CLONE_PROTOCOL $CLONE_PROTOCOL -r '
@@ -54,5 +50,5 @@ while [ "$next_page" ]; do
     echo "$cleanUrl,$branchName"
   done
 
-  next_page=$(echo $response | sed -e "s:${username}@::g" | jq -r '.next // empty')
+  next_page=$(echo $response | jq -r '.next // empty')
 done
