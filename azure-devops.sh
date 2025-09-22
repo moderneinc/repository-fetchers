@@ -35,8 +35,24 @@ if [[ -z "$PROJECT" ]]; then
     exit 1
 fi
 
+# Check if az CLI is installed
+if ! command -v az &> /dev/null; then
+    echo "Error: Azure CLI (az) is not installed. Please install it first." >&2
+    echo "Visit: https://docs.microsoft.com/en-us/cli/azure/install-azure-cli" >&2
+    exit 1
+fi
+
+# Check if azure-devops extension is installed and install if needed
+if ! az extension list --query "[?name=='azure-devops'].name" -o tsv 2>/dev/null | grep -q "azure-devops"; then
+    echo "Installing azure-devops extension..." >&2
+    az extension add --name azure-devops -y >&2
+fi
+
+# Configure extension to allow preview versions without prompting
+az config set extension.dynamic_install_allow_preview=false 2>/dev/null
+
 # Output CSV header
-echo "cloneUrl,branch"
+echo "cloneUrl,branch,origin,path"
 
 # Fetch repositories using TSV output and process manually
 az repos list --organization "https://dev.azure.com/$ORGANIZATION" --project "$PROJECT" --output tsv --query '[].{sshUrl: sshUrl, defaultBranch: defaultBranch, remoteUrl: remoteUrl}' | while IFS=$'\t' read -r ssh_url default_branch remoteUrl; do
@@ -48,10 +64,23 @@ az repos list --organization "https://dev.azure.com/$ORGANIZATION" --project "$P
         branch="${default_branch#refs/heads/}"
     fi
 
-    # Output in CSV format with proper quoting
+    # Extract origin and path to be consistent across SSH and HTTPS
+    # Origin is always dev.azure.com/org for consistency
+    origin="dev.azure.com/$ORGANIZATION"
+
+    # Path is project/_git/repo for consistency
     if [[ -z "$USE_HTTPS" ]]; then
-      echo "\"$ssh_url\",\"$branch\""
+      # SSH: git@ssh.dev.azure.com:v3/org/project/repo
+      # Extract repo name from SSH URL
+      repo_name=$(echo "$ssh_url" | sed -E 's|.*v3/[^/]+/[^/]+/||')
+      path="$PROJECT/_git/$repo_name"
+      echo "\"$ssh_url\",\"$branch\",\"$origin\",\"$path\""
     else
-      echo "\"$remoteUrl\",\"$branch\""
+      # HTTPS: https://dev.azure.com/org/project/_git/repo
+      # Remove username@ prefix from URL
+      clean_url=$(echo "$remoteUrl" | sed -E 's|https://[^@]+@|https://|')
+      # Extract path after organization
+      path=$(echo "$clean_url" | sed -E "s|https://dev.azure.com/$ORGANIZATION/||")
+      echo "\"$clean_url\",\"$branch\",\"$origin\",\"$path\""
     fi
 done

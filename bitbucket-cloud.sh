@@ -36,7 +36,7 @@ if [ -z "$CLONE_PROTOCOL" -o "$CLONE_PROTOCOL" != "ssh" ]; then
     CLONE_PROTOCOL=https
 fi
 
-echo "cloneUrl,branch"
+echo "cloneUrl,branch,origin,path"
 
 next_page="https://api.bitbucket.org/2.0/repositories/$workspace"
 
@@ -51,7 +51,17 @@ while [ "$next_page" ]; do
     "\($cloneUrl),\($branchName)"' |
   while IFS=, read -r cloneUrl branchName; do
     cleanUrl=$(echo "$cloneUrl" | sed -E 's|https://[^@]+@|https://|')
-    echo "$cleanUrl,$branchName"
+    # Extract origin and path - bitbucket.org is always the origin
+    origin="bitbucket.org"
+    # Path is workspace/repository for both SSH and HTTPS
+    if [[ "$cleanUrl" == *"git@"* ]]; then
+      # SSH: git@bitbucket.org:workspace/repository.git
+      path=$(echo "$cleanUrl" | sed -E 's|git@[^:]+:||; s|\.git$||')
+    else
+      # HTTPS: https://bitbucket.org/workspace/repository.git
+      path=$(echo "$cleanUrl" | sed -E 's|https://[^/]+/||; s|\.git$||')
+    fi
+    echo "$cleanUrl,$branchName,$origin,$path"
   done
 
   next_page=$(echo $response | sed -e "s:${username}@::g" | jq -r '.next // empty')
