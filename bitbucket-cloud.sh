@@ -1,15 +1,17 @@
 #!/bin/bash
 
 usage() {
-  echo "Usage: $0 -t <token> <workspace>"
-  echo "Alternative: Set BITBUCKET_TOKEN environment variable"
+  echo "Usage: $0 -t <token> [-e <email>] <workspace>"
+  echo "Alternative: Set BITBUCKET_TOKEN and optionally BITBUCKET_EMAIL environment variables"
+  echo "Note: Use email with API tokens, omit for workspace tokens"
   exit 1
 }
 
 # Parse command-line arguments
-while getopts ":t:" opt; do
+while getopts ":t:e:" opt; do
   case ${opt} in
     t) token=$OPTARG;;
+    e) email=$OPTARG;;
     *) usage;;
   esac
 done
@@ -21,6 +23,10 @@ workspace=$1
 # Check if token is provided via command line or environment variable
 if [ -z "$token" ]; then
     token=$BITBUCKET_TOKEN
+fi
+
+if [ -z "$email" ]; then
+    email=$BITBUCKET_EMAIL
 fi
 
 if [ -z "$token" -o -z "$workspace" ]; then
@@ -37,7 +43,12 @@ echo "cloneUrl,branch"
 next_page="https://api.bitbucket.org/2.0/repositories/$workspace"
 
 while [ "$next_page" ]; do
-  response=$(curl -s -H "Authorization: Bearer $token" "$next_page")
+  # Use basic auth with email for API tokens, Bearer for workspace tokens
+  if [ -n "$email" ]; then
+    response=$(curl -s -u "$email:$token" "$next_page")
+  else
+    response=$(curl -s -H "Authorization: Bearer $token" "$next_page")
+  fi
 
   # Extract repository data and append to CSV file
   echo $response | jq --arg CLONE_PROTOCOL $CLONE_PROTOCOL -r '
