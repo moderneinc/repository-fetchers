@@ -98,17 +98,26 @@ This script fetches all repositories from a Bitbucket Cloud workspace.
 
 #### Usage
 ```sh
-./bitbucket-cloud.sh -u username -p password <workspace>
+./bitbucket-cloud.sh -t <token> <workspace>
 ```
 
 #### Description
-This script fetches all repositories from the specified Bitbucket Cloud workspace. Authentication is provided via the `-u` (username) and `-p` (app password) options, or via the `BITBUCKET_USERNAME` and `BITBUCKET_APP_PASSWORD` environment variables.
+This script fetches all repositories from the specified Bitbucket Cloud workspace using a Personal Access Token (PAT) for authentication. The token can be provided via the `-t` flag or through the `BITBUCKET_TOKEN` environment variable.
+
+##### Prerequisites:
+1. Create a Personal Access Token in Bitbucket Cloud with `repository:read` scope
+2. Provide the token either via `-t` flag or `BITBUCKET_TOKEN` environment variable
 
 #### Example
 
 **Linux/macOS (Bash):**
 ```sh
-./bitbucket-cloud.sh -u YOUR_USERNAME -p APP_PASSWORD myworkspace
+./bitbucket-cloud.sh -t YOUR_TOKEN myworkspace
+```
+
+Or using environment variable:
+```sh
+BITBUCKET_TOKEN=YOUR_TOKEN ./bitbucket-cloud.sh myworkspace
 ```
 
 **Windows (PowerShell):**
