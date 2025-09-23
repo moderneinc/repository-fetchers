@@ -5,18 +5,20 @@ This directory contains scripts that query a source code manager (SCM) to create
 The expected output looks similar to:
 
 ```csv
-cloneUrl,branch
-https://github.com/openrewrite/rewrite-spring,main
-https://github.com/openrewrite/rewrite-recipe-markdown-generator,main
-https://github.com/openrewrite/rewrite-docs,master
-https://github.com/openrewrite/rewrite,main
-https://github.com/openrewrite/rewrite-python,main
-https://github.com/openrewrite/rewrite-migrate-java,main
-https://github.com/openrewrite/rewrite-recommendations,main
-https://github.com/openrewrite/rewrite-testing-frameworks,main
-https://github.com/openrewrite/rewrite-gradle-tooling-model,main
-https://github.com/openrewrite/rewrite-recipe-bom,main
+cloneUrl,branch,origin,path,org
+https://github.com/openrewrite/rewrite-spring,main,github.com,openrewrite/rewrite-spring,openrewrite
+https://github.com/openrewrite/rewrite-recipe-markdown-generator,main,github.com,openrewrite/rewrite-recipe-markdown-generator,openrewrite
+https://github.com/openrewrite/rewrite-docs,master,github.com,openrewrite/rewrite-docs,openrewrite
+https://github.com/openrewrite/rewrite,main,github.com,openrewrite/rewrite,openrewrite
+https://github.com/openrewrite/rewrite-python,main,github.com,openrewrite/rewrite-python,openrewrite
+https://github.com/openrewrite/rewrite-migrate-java,main,github.com,openrewrite/rewrite-migrate-java,openrewrite
+https://github.com/openrewrite/rewrite-recommendations,main,github.com,openrewrite/rewrite-recommendations,openrewrite
+https://github.com/openrewrite/rewrite-testing-frameworks,main,github.com,openrewrite/rewrite-testing-frameworks,openrewrite
+https://github.com/openrewrite/rewrite-gradle-tooling-model,main,github.com,openrewrite/rewrite-gradle-tooling-model,openrewrite
+https://github.com/openrewrite/rewrite-recipe-bom,main,github.com,openrewrite/rewrite-recipe-bom,openrewrite
 ```
+
+**Note**: Not all fetchers include the `org` column - it depends on the SCM structure.
 
 ## Supported SCMs
 * [GitHub](#github)
@@ -99,10 +101,27 @@ This script fetches all repositories from a GitLab instance or a specific group 
 #### Description
 This script fetches all repositories from a GitLab instance or a specific group within a GitLab instance. The `AUTH_TOKEN` environment variable must be set for authentication. The `-g` option specifies a group to fetch repositories from. The `-h` option specifies the GitLab domain (defaults to `https://gitlab.com` if not provided).
 
-#### Example
-To fetch all repositories from a specific group on a custom GitLab domain:
+**Note**: If your GitLab instance is installed at a subpath (e.g., `https://git.mycompany.com/gitlab/`), include the full URL with the subpath in the `-h` option.
+
+#### Examples
+To fetch all accessible repositories from gitlab.com:
 ```sh
-AUTH_TOKEN=YOUR_TOKEN ./gitlab.sh -g my-group -h https://my-gitlab.com
+AUTH_TOKEN=YOUR_TOKEN ./gitlab.sh
+```
+
+To fetch all repositories from a specific group on gitlab.com:
+```sh
+AUTH_TOKEN=YOUR_TOKEN ./gitlab.sh -g my-group
+```
+
+To fetch from a self-hosted GitLab instance:
+```sh
+AUTH_TOKEN=YOUR_TOKEN ./gitlab.sh -h https://git.mycompany.com
+```
+
+To fetch from a GitLab instance installed at a subpath:
+```sh
+AUTH_TOKEN=YOUR_TOKEN ./gitlab.sh -h https://git.mycompany.com/gitlab -g team
 ```
 
 ### Azure DevOps
