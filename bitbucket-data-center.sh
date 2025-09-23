@@ -102,11 +102,26 @@ function fetch_repos() {
             jq --arg CLONE_PROTOCOL $CLONE_PROTOCOL -r '.values[] | [(.links.clone[] | select(.name == $CLONE_PROTOCOL).href), .slug, .project.key] | @csv | sub("\"";"";"g")'`; do
             IFS=", " read -r clone_url repo_slug project <<< $ROW
             local default_branch=$(fetch_default_branch $repo_slug $project)
-            echo $clone_url,$default_branch
+            # Extract origin and path from clone_url
+            if [[ "$CLONE_PROTOCOL" == "ssh" ]]; then
+                # SSH: ssh://git@scm.mycompany.com:7999/proj/repo.git
+                origin=$(echo $clone_url | sed -E 's|ssh://[^@]+@([^:]+):?[0-9]*/.*|\1|')
+                # Append /stash context if bitbucket_url contains it
+                if [[ "$bitbucket_url" == *"/stash"* ]]; then
+                    origin="$origin/stash"
+                fi
+                path=$(echo $clone_url | sed -E 's|ssh://[^/]+/||; s|\.git$||')
+            else
+                # HTTPS: https://scm.mycompany.com/stash/scm/PROJ/repo.git
+                origin=$(echo $clone_url | sed -E 's|https://([^/]+(/[^/]+)?)/.*|\1|')
+                # Remove /scm from path for HTTPS
+                path=$(echo $clone_url | sed -E 's|https://[^/]+(/[^/]+)?/scm/||; s|https://[^/]+(/[^/]+)?/||; s|\.git$||')
+            fi
+            echo $clone_url,$default_branch,$origin,$path
         done
     done
 }
 
-echo "cloneUrl,branch"
+echo "cloneUrl,branch,origin,path"
 fetch_repos
 
