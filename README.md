@@ -69,9 +69,12 @@ To fetch all repositories from a Bitbucket Data Center instance:
 AUTH_TOKEN=YOUR_TOKEN ./bitbucket-data-center.sh https://my-bitbucket.com/stash
 ```
 
+#### Optional Environment Variables
+- `CLONE_PROTOCOL`: Set to `ssh` to use SSH URLs instead of HTTP. Defaults to `http`.
+
 ### Bitbucket Cloud
 
-This script fetches all repositories from a Bitbucket Data Center instance.
+This script fetches all repositories from a Bitbucket Cloud workspace.
 
 #### Usage
 ```sh
@@ -79,13 +82,16 @@ This script fetches all repositories from a Bitbucket Data Center instance.
 ```
 
 #### Description
-This script fetches all repositories from the specified Bitbucket Data Center URL. If the `AUTH_TOKEN` environment variable is set, it will be used for authentication.
+This script fetches all repositories from the specified Bitbucket Cloud workspace. Authentication is provided via the `-u` (username) and `-p` (app password) options, or via the `BITBUCKET_USERNAME` and `BITBUCKET_APP_PASSWORD` environment variables.
 
 #### Example
-To fetch all repositories from a Bitbucket Data Center instance:
+To fetch all repositories from a Bitbucket Cloud workspace:
 ```sh
 ./bitbucket-cloud.sh -u YOUR_USERNAME -p APP_PASSWORD myworkspace
 ```
+
+#### Optional Environment Variables
+- `CLONE_PROTOCOL`: Set to `ssh` to use SSH URLs instead of HTTPS. Defaults to `https`.
 
 ### GitLab
 
@@ -104,6 +110,9 @@ To fetch all repositories from a specific group on a custom GitLab domain:
 ```sh
 AUTH_TOKEN=YOUR_TOKEN ./gitlab.sh -g my-group -h https://my-gitlab.com
 ```
+
+#### Optional Environment Variables
+- `CLONE_PROTOCOL`: Set to `ssh` to use SSH URLs instead of HTTPS. Defaults to `https`.
 
 ### Azure DevOps
 
