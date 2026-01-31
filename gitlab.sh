@@ -10,6 +10,27 @@ while getopts ":g:h:" opt; do
             ;;
         \? )
             echo "Usage: gitlab.sh [-g <group>] [-h <gitlab_domain>]"
+            echo ""
+            echo "Options:"
+            echo "  -g <group>        GitLab group to fetch repositories from"
+            echo "  -h <gitlab_domain> GitLab instance URL (default: https://gitlab.com)"
+            echo "                    Include any subpath, e.g. https://git.mycompany.com/gitlab"
+            echo ""
+            echo "Environment variables:"
+            echo "  AUTH_TOKEN       Required. Your GitLab personal access token"
+            echo ""
+            echo "Examples:"
+            echo "  # Fetch all accessible projects from gitlab.com"
+            echo "  AUTH_TOKEN=your_token ./gitlab.sh"
+            echo ""
+            echo "  # Fetch projects from a specific group on gitlab.com"
+            echo "  AUTH_TOKEN=your_token ./gitlab.sh -g mygroup"
+            echo ""
+            echo "  # Fetch from self-hosted GitLab"
+            echo "  AUTH_TOKEN=your_token ./gitlab.sh -h https://git.mycompany.com"
+            echo ""
+            echo "  # Fetch from self-hosted GitLab with subpath"
+            echo "  AUTH_TOKEN=your_token ./gitlab.sh -h https://git.mycompany.com/gitlab -g team"
             exit 1
             ;;
     esac
