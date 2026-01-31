@@ -112,10 +112,16 @@ function fetch_repos() {
                 fi
                 path=$(echo $clone_url | sed -E 's|ssh://[^/]+/||; s|\.git$||')
             else
-                # HTTPS: https://scm.mycompany.com/stash/scm/PROJ/repo.git
-                origin=$(echo $clone_url | sed -E 's|https://([^/]+(/[^/]+)?)/.*|\1|')
+                # HTTPS: https://scm.mycompany.com/stash/scm/PROJ/repo.git or http://localhost:7990/scm/PROJ/repo.git
+                # Extract just the host:port first
+                origin=$(echo $clone_url | sed -E 's|https?://([^/]+)/.*|\1|')
+                # Append context path (like /stash) if bitbucket_url contains it
+                context_path=$(echo "$bitbucket_url" | sed -E 's|https?://[^/]+||; s|/$||')
+                if [[ -n "$context_path" ]]; then
+                    origin="$origin$context_path"
+                fi
                 # Remove /scm from path for HTTPS
-                path=$(echo $clone_url | sed -E 's|https://[^/]+(/[^/]+)?/scm/||; s|https://[^/]+(/[^/]+)?/||; s|\.git$||')
+                path=$(echo $clone_url | sed -E 's|https?://[^/]+(/[^/]+)?/scm/||; s|https?://[^/]+(/[^/]+)?/||; s|\.git$||')
             fi
             echo $clone_url,$default_branch,$origin,$path
         done

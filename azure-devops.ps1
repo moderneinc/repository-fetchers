@@ -35,10 +35,13 @@ param(
 )
 
 # Output CSV header
-Write-Output "cloneUrl,branch"
+Write-Output "cloneUrl,branch,origin,path"
 
 # Fetch repositories using Azure CLI
 $repos = az repos list --organization "https://dev.azure.com/$Organization" --project $Project --output json | ConvertFrom-Json
+
+# Origin is always dev.azure.com/org for consistency
+$origin = "dev.azure.com/$Organization"
 
 foreach ($repo in $repos) {
     # Select URL based on protocol preference
@@ -57,6 +60,9 @@ foreach ($repo in $repos) {
         $branch = $branch -replace '^refs/heads/', ''
     }
 
+    # Path is project/_git/repo for consistency
+    $path = "$Project/_git/$($repo.name)"
+
     # Output as CSV row
-    Write-Output ('"{0}","{1}"' -f $cloneUrl, $branch)
+    Write-Output ('"{0}","{1}","{2}","{3}"' -f $cloneUrl, $branch, $origin, $path)
 }
