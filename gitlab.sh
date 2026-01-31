@@ -42,6 +42,10 @@ if [[ -z $AUTH_TOKEN ]]; then
     exit 1
 fi
 
+if [ -z "$CLONE_PROTOCOL" ] || [ "$CLONE_PROTOCOL" != "ssh" ]; then
+    CLONE_PROTOCOL=https
+fi
+
 # default GITLAB_DOMAIN to gitlab.com
 GITLAB_DOMAIN=${GITLAB_DOMAIN:-https://gitlab.com}
 
@@ -62,13 +66,27 @@ while :; do
     # Fetch the data
     response=$(curl --silent --header "Authorization: Bearer $AUTH_TOKEN" "$request_url")
 
+    # Check if response is valid JSON
+    if ! echo "$response" | jq -e '.' >/dev/null 2>&1; then
+        echo "Error: Invalid JSON response from GitLab API." >&2
+        echo "Response: $response" >&2
+        exit 1
+    fi
+
+    # Check if response is an error (object with message/error field instead of array)
+    if echo "$response" | jq -e 'type == "object" and (.message or .error)' >/dev/null 2>&1; then
+        error_msg=$(echo "$response" | jq -r '.message // .error // "Unknown error"')
+        echo "Error from GitLab API: $error_msg" >&2
+        exit 1
+    fi
+
     # Check if the response is empty, if so, break the loop
     if [[ $(echo "$response" | jq '. | length') -eq 0 ]]; then
         break
     fi
 
     # Process and output data
-    echo "$response" | jq -r --arg origin "${GITLAB_DOMAIN#*//}" '(.[] | [.http_url_to_repo, .default_branch, $origin, .path_with_namespace, .namespace.path]) | @csv'
+    echo "$response" | jq -r --arg origin "${GITLAB_DOMAIN#*//}" --arg protocol "$CLONE_PROTOCOL" '(.[] | [(if $protocol == "ssh" then .ssh_url_to_repo else .http_url_to_repo end), .default_branch, $origin, .path_with_namespace, .namespace.path]) | @csv'
 
     # Increment page counter
     ((page++))

@@ -18,13 +18,18 @@ https://github.com/openrewrite/rewrite-gradle-tooling-model,main,github.com,open
 https://github.com/openrewrite/rewrite-recipe-bom,main,github.com,openrewrite/rewrite-recipe-bom,openrewrite
 ```
 
-**Note**: Not all fetchers include the `org` column - it depends on the SCM structure.
+## Platform Support
+
+Each SCM has two script versions:
+- **Bash scripts** (`.sh`) for Linux and macOS - require `jq` for JSON parsing
+- **PowerShell scripts** (`.ps1`) for Windows - use native PowerShell JSON parsing
 
 ## Supported SCMs
 * [GitHub](#github)
 * [Bitbucket Data Center](#bitbucket-data-center)
 * [Bitbucket Cloud](#bitbucket-cloud)
 * [GitLab](#gitlab)
+* [Azure DevOps](#azure-devops)
 
 Below are the details of each script along with examples of how to invoke them and their required/optional arguments.
 
@@ -47,9 +52,15 @@ This script fetches all repositories from the specified GitHub organization.
 (**Note**: if you use a GitHub installation rather than `github.com` you will have to `gh auth login --hostname github.mycompany.com`)
 
 #### Example
-To fetch all repositories from a GitHub organization:
+
+**Linux/macOS (Bash):**
 ```sh
 ./github.sh my-organization
+```
+
+**Windows (PowerShell):**
+```powershell
+.\github.ps1 -Organization my-organization
 ```
 
 
@@ -66,14 +77,24 @@ This script fetches all repositories from a Bitbucket Data Center instance.
 This script fetches all repositories from the specified Bitbucket Data Center URL. If the `AUTH_TOKEN` environment variable is set, it will be used for authentication.
 
 #### Example
-To fetch all repositories from a Bitbucket Data Center instance:
+
+**Linux/macOS (Bash):**
 ```sh
 AUTH_TOKEN=YOUR_TOKEN ./bitbucket-data-center.sh https://my-bitbucket.com/stash
 ```
 
+**Windows (PowerShell):**
+```powershell
+$env:AUTH_TOKEN = "YOUR_TOKEN"
+.\bitbucket-data-center.ps1 -BitbucketUrl https://my-bitbucket.com/stash
+```
+
+#### Optional Environment Variables
+- `CLONE_PROTOCOL`: Set to `ssh` to use SSH URLs instead of HTTP. Defaults to `http`.
+
 ### Bitbucket Cloud
 
-This script fetches all repositories from a Bitbucket Data Center instance.
+This script fetches all repositories from a Bitbucket Cloud workspace.
 
 #### Usage
 ```sh
@@ -81,13 +102,26 @@ This script fetches all repositories from a Bitbucket Data Center instance.
 ```
 
 #### Description
-This script fetches all repositories from the specified Bitbucket Data Center URL. If the `AUTH_TOKEN` environment variable is set, it will be used for authentication.
+This script fetches all repositories from the specified Bitbucket Cloud workspace. Authentication is provided via the `-u` (username) and `-p` (app password) options, or via the `BITBUCKET_USERNAME` and `BITBUCKET_APP_PASSWORD` environment variables.
 
 #### Example
-To fetch all repositories from a Bitbucket Data Center instance:
+
+**Linux/macOS (Bash):**
 ```sh
 ./bitbucket-cloud.sh -u YOUR_USERNAME -p APP_PASSWORD myworkspace
 ```
+
+**Windows (PowerShell):**
+```powershell
+.\bitbucket-cloud.ps1 -Workspace myworkspace -Username YOUR_USERNAME -AppPassword APP_PASSWORD
+# Or using environment variables:
+$env:BITBUCKET_USERNAME = "YOUR_USERNAME"
+$env:BITBUCKET_APP_PASSWORD = "APP_PASSWORD"
+.\bitbucket-cloud.ps1 -Workspace myworkspace
+```
+
+#### Optional Environment Variables
+- `CLONE_PROTOCOL`: Set to `ssh` to use SSH URLs instead of HTTPS. Defaults to `https`.
 
 ### GitLab
 
@@ -120,9 +154,23 @@ AUTH_TOKEN=YOUR_TOKEN ./gitlab.sh -h https://git.mycompany.com
 ```
 
 To fetch from a GitLab instance installed at a subpath:
+#### Example
+
+**Linux/macOS (Bash):**
 ```sh
 AUTH_TOKEN=YOUR_TOKEN ./gitlab.sh -h https://git.mycompany.com/gitlab -g team
 ```
+
+**Windows (PowerShell):**
+```powershell
+$env:AUTH_TOKEN = "YOUR_TOKEN"
+.\gitlab.ps1 -Group my-group -GitLabDomain https://my-gitlab.com
+# Without group (all user's projects):
+.\gitlab.ps1
+```
+
+#### Optional Environment Variables
+- `CLONE_PROTOCOL`: Set to `ssh` to use SSH URLs instead of HTTPS. Defaults to `https`.
 
 ### Azure DevOps
 
@@ -145,8 +193,18 @@ One Organization has multiple Projects, which each can contain multiple Reposito
 3. Azure CLI must be logged in `az login` and user has access to the organization and project
 
 #### Example
-To fetch all repositories from an Azure DevOps organization and project:
+
+**Linux/macOS (Bash):**
 ```sh
 ./azure-devops.sh -o <organization> -p <project>
+# Use -h flag for HTTPS URLs instead of SSH
+./azure-devops.sh -o <organization> -p <project> -h
+```
+
+**Windows (PowerShell):**
+```powershell
+.\azure-devops.ps1 -Organization <organization> -Project <project>
+# Use -UseHttps switch for HTTPS URLs instead of SSH
+.\azure-devops.ps1 -Organization <organization> -Project <project> -UseHttps
 ```
 
