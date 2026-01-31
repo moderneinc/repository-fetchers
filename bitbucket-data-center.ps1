@@ -110,14 +110,20 @@ function Get-Repositories {
             # Fetch default branch for this repo
             $defaultBranch = Get-DefaultBranch -RepoSlug $repoSlug -Project $project
 
+            # Extract path (project/repo)
+            $path = "$project/$repoSlug"
+
             # Output as CSV row
-            Write-Output "$cloneUrl,$defaultBranch"
+            Write-Output "$cloneUrl,$defaultBranch,$origin,$path"
         }
     }
 }
 
+# Extract origin from BitbucketUrl (domain + optional context path like /stash)
+$origin = $BitbucketUrl -replace '^https?://', '' -replace '/scm.*$', '' -replace '/$', ''
+
 # Output CSV header
-Write-Output "cloneUrl,branch"
+Write-Output "cloneUrl,branch,origin,path"
 
 # Fetch all repositories
 Get-Repositories

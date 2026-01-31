@@ -63,7 +63,7 @@ $headers = @{
 }
 
 # Output CSV header
-Write-Output "cloneUrl,branch"
+Write-Output "cloneUrl,branch,origin,path"
 
 $nextPage = "https://api.bitbucket.org/2.0/repositories/$Workspace"
 
@@ -86,8 +86,20 @@ while (-not [string]::IsNullOrEmpty($nextPage)) {
         # Clean credentials from URL (remove username@ from https://username@bitbucket.org/...)
         $cleanUrl = $cloneUrl -replace 'https://[^@]+@', 'https://'
 
+        # Origin is always bitbucket.org for cloud
+        $origin = "bitbucket.org"
+
+        # Extract path (workspace/repo) from URL
+        if ($cleanUrl -match 'git@') {
+            # SSH: git@bitbucket.org:workspace/repository.git
+            $path = $cleanUrl -replace '^git@[^:]+:', '' -replace '\.git$', ''
+        } else {
+            # HTTPS: https://bitbucket.org/workspace/repository.git
+            $path = $cleanUrl -replace '^https://[^/]+/', '' -replace '\.git$', ''
+        }
+
         # Output as CSV row
-        Write-Output "$cleanUrl,$branchName"
+        Write-Output "$cleanUrl,$branchName,$origin,$path"
     }
 
     # Get next page URL (remove embedded credentials)
