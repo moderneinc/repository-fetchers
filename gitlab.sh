@@ -37,6 +37,12 @@ while getopts ":g:h:" opt; do
 done
 
 
+if ! command -v jq &> /dev/null; then
+    echo "Error: jq is required but not installed." >&2
+    echo "Install it from https://jqlang.github.io/jq/download/ or use gitlab.ps1 on Windows." >&2
+    exit 1
+fi
+
 if [[ -z $AUTH_TOKEN ]]; then
     echo "Please set the AUTH_TOKEN environment variable."
     exit 1
