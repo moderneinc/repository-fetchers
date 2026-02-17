@@ -44,8 +44,7 @@ $cloneProtocol = if ($env:CLONE_PROTOCOL -eq "ssh") { "ssh" } else { "https" }
 if ([string]::IsNullOrEmpty($Group)) {
     $baseUrl = "$GitLabDomain/api/v4/projects?membership=true&simple=true&archived=false"
 } else {
-    $encodedGroup = $Group -replace '/', '%2F'
-    $baseUrl = "$GitLabDomain/api/v4/groups/$encodedGroup/projects?include_subgroups=true&simple=true&archived=false"
+    $baseUrl = "$GitLabDomain/api/v4/groups/$Group/projects?include_subgroups=true&simple=true&archived=false"
 }
 
 # Extract origin from domain (remove https:// prefix)
