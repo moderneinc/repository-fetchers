@@ -52,7 +52,8 @@ GITLAB_DOMAIN=${GITLAB_DOMAIN:-https://gitlab.com}
 if [[ -z $GROUP ]]; then
     base_request_url="$GITLAB_DOMAIN/api/v4/projects?membership=true&simple=true&archived=false"
 else
-    base_request_url="$GITLAB_DOMAIN/api/v4/groups/$GROUP/projects?include_subgroups=true&simple=true&archived=false"
+    encoded_group="${GROUP//\//%2F}"
+    base_request_url="$GITLAB_DOMAIN/api/v4/groups/$encoded_group/projects?include_subgroups=true&simple=true&archived=false"
 fi
 
 page=1
