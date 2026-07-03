@@ -5,17 +5,17 @@ This directory contains scripts that query a source code manager (SCM) to create
 The expected output looks similar to:
 
 ```csv
-cloneUrl,branch,origin,path,org
-https://github.com/openrewrite/rewrite-spring,main,github.com,openrewrite/rewrite-spring,openrewrite
-https://github.com/openrewrite/rewrite-recipe-markdown-generator,main,github.com,openrewrite/rewrite-recipe-markdown-generator,openrewrite
-https://github.com/openrewrite/rewrite-docs,master,github.com,openrewrite/rewrite-docs,openrewrite
-https://github.com/openrewrite/rewrite,main,github.com,openrewrite/rewrite,openrewrite
-https://github.com/openrewrite/rewrite-python,main,github.com,openrewrite/rewrite-python,openrewrite
-https://github.com/openrewrite/rewrite-migrate-java,main,github.com,openrewrite/rewrite-migrate-java,openrewrite
-https://github.com/openrewrite/rewrite-recommendations,main,github.com,openrewrite/rewrite-recommendations,openrewrite
-https://github.com/openrewrite/rewrite-testing-frameworks,main,github.com,openrewrite/rewrite-testing-frameworks,openrewrite
-https://github.com/openrewrite/rewrite-gradle-tooling-model,main,github.com,openrewrite/rewrite-gradle-tooling-model,openrewrite
-https://github.com/openrewrite/rewrite-recipe-bom,main,github.com,openrewrite/rewrite-recipe-bom,openrewrite
+cloneUrl,branch,origin,path
+https://github.com/openrewrite/rewrite-spring,main,github.com,openrewrite/rewrite-spring
+https://github.com/openrewrite/rewrite-recipe-markdown-generator,main,github.com,openrewrite/rewrite-recipe-markdown-generator
+https://github.com/openrewrite/rewrite-docs,master,github.com,openrewrite/rewrite-docs
+https://github.com/openrewrite/rewrite,main,github.com,openrewrite/rewrite
+https://github.com/openrewrite/rewrite-python,main,github.com,openrewrite/rewrite-python
+https://github.com/openrewrite/rewrite-migrate-java,main,github.com,openrewrite/rewrite-migrate-java
+https://github.com/openrewrite/rewrite-recommendations,main,github.com,openrewrite/rewrite-recommendations
+https://github.com/openrewrite/rewrite-testing-frameworks,main,github.com,openrewrite/rewrite-testing-frameworks
+https://github.com/openrewrite/rewrite-gradle-tooling-model,main,github.com,openrewrite/rewrite-gradle-tooling-model
+https://github.com/openrewrite/rewrite-recipe-bom,main,github.com,openrewrite/rewrite-recipe-bom
 ```
 
 ## Platform Support

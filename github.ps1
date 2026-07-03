@@ -24,7 +24,7 @@ param(
 )
 
 # Output CSV header
-Write-Output '"cloneUrl","branch","origin","path","org"'
+Write-Output '"cloneUrl","branch","origin","path"'
 
 # Fetch repositories using GitHub CLI with pagination
 $repos = gh api --paginate "orgs/$Organization/repos" | ConvertFrom-Json
@@ -41,5 +41,5 @@ $repos | Where-Object { -not $_.archived } | ForEach-Object {
     $path = $cloneUrl -replace '^https://[^/]+/', '' -replace '\.git$', ''
 
     # Output as CSV row
-    '"{0}","{1}","{2}","{3}","{4}"' -f $cloneUrl, $branch, $origin, $path, $Organization
+    '"{0}","{1}","{2}","{3}"' -f $cloneUrl, $branch, $origin, $path
 } | Sort-Object

@@ -56,7 +56,7 @@ $headers = @{
 }
 
 # Output CSV header
-Write-Output '"cloneUrl","branch","origin","path","org"'
+Write-Output '"cloneUrl","branch","origin","path"'
 
 $page = 1
 $perPage = 100
@@ -87,10 +87,9 @@ while ($true) {
 
         $branch = $project.default_branch
         $path = $project.path_with_namespace
-        $org = $project.namespace.path
 
         # Output as CSV row
-        Write-Output ('"{0}","{1}","{2}","{3}","{4}"' -f $cloneUrl, $branch, $origin, $path, $org)
+        Write-Output ('"{0}","{1}","{2}","{3}"' -f $cloneUrl, $branch, $origin, $path)
     }
 
     $page++
