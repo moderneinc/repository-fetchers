@@ -64,7 +64,7 @@ fi
 page=1
 per_page=100
 
-echo '"cloneUrl","branch","origin","path","org"'
+echo '"cloneUrl","branch","origin","path"'
 while :; do
     # Construct the request URL with pagination parameters
     request_url="${base_request_url}&page=${page}&per_page=${per_page}"
@@ -92,7 +92,7 @@ while :; do
     fi
 
     # Process and output data
-    echo "$response" | jq -r --arg origin "${GITLAB_DOMAIN#*//}" --arg protocol "$CLONE_PROTOCOL" '(.[] | [(if $protocol == "ssh" then .ssh_url_to_repo else .http_url_to_repo end), .default_branch, $origin, .path_with_namespace, .namespace.path]) | @csv'
+    echo "$response" | jq -r --arg origin "${GITLAB_DOMAIN#*//}" --arg protocol "$CLONE_PROTOCOL" '(.[] | [(if $protocol == "ssh" then .ssh_url_to_repo else .http_url_to_repo end), .default_branch, $origin, .path_with_namespace]) | @csv'
 
     # Increment page counter
     ((page++))
