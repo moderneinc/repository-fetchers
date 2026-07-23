@@ -3,11 +3,13 @@
     Fetches repository information from GitLab.
 
 .DESCRIPTION
-    Queries the GitLab API for all projects in a group (or all user's projects)
-    and outputs CSV data with clone URLs, branches, and metadata.
+    Queries the GitLab API for all projects in a group (or all projects visible
+    to the user) and outputs CSV data with clone URLs, branches, and metadata.
 
 .PARAMETER Group
-    Optional GitLab group name. If not specified, returns all user's projects.
+    Optional GitLab group name. If not specified, returns every project visible
+    to the token, which on a large instance includes all public and internal
+    projects, not just your own.
 
 .PARAMETER GitLabDomain
     Optional GitLab domain URL. Defaults to https://gitlab.com
@@ -42,7 +44,7 @@ $cloneProtocol = if ($env:CLONE_PROTOCOL -eq "ssh") { "ssh" } else { "https" }
 
 # Build base request URL
 if ([string]::IsNullOrEmpty($Group)) {
-    $baseUrl = "$GitLabDomain/api/v4/projects?membership=true&simple=true&archived=false"
+    $baseUrl = "$GitLabDomain/api/v4/projects?simple=true&archived=false"
 } else {
     $baseUrl = "$GitLabDomain/api/v4/groups/$Group/projects?include_subgroups=true&simple=true&archived=false"
 }

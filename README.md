@@ -137,6 +137,8 @@ This script fetches all repositories from a GitLab instance or a specific group 
 
 **Note**: If your GitLab instance is installed at a subpath (e.g., `https://git.mycompany.com/gitlab/`), include the full URL with the subpath in the `-h` option.
 
+**Note**: When no group is specified, the script returns every project visible to your token. On a large instance this includes all public and internal projects, not just ones you are a member of, and can be a very large result set. Specify a group to scope the output.
+
 #### Examples
 To fetch all accessible repositories from gitlab.com:
 ```sh
@@ -165,7 +167,7 @@ AUTH_TOKEN=YOUR_TOKEN ./gitlab.sh -h https://git.mycompany.com/gitlab -g team
 ```powershell
 $env:AUTH_TOKEN = "YOUR_TOKEN"
 .\gitlab.ps1 -Group my-group -GitLabDomain https://my-gitlab.com
-# Without group (all user's projects):
+# Without group (all projects visible to the token):
 .\gitlab.ps1
 ```
 
