@@ -7,18 +7,24 @@
     to the user) and outputs CSV data with clone URLs, branches, and metadata.
 
 .PARAMETER Group
-    Optional GitLab group name. If not specified, returns every project visible
-    to the token, which on a large instance includes all public and internal
-    projects, not just your own.
+    Optional GitLab group name. If not specified, returns the projects you are a
+    member of (see -IncludeAllRepos).
 
 .PARAMETER GitLabDomain
     Optional GitLab domain URL. Defaults to https://gitlab.com
+
+.PARAMETER IncludeAllRepos
+    Only applies when -Group is not specified. By default the query is limited to
+    projects you hold a role on (membership=true). Pass this switch to instead
+    return every project visible to your token, which on a large instance
+    includes all public and internal projects and can be a very large result set.
 
 .EXAMPLE
     $env:AUTH_TOKEN = "your-token"
     .\gitlab.ps1
     .\gitlab.ps1 -Group mygroup
     .\gitlab.ps1 -Group mygroup -GitLabDomain https://gitlab.mycompany.com
+    .\gitlab.ps1 -IncludeAllRepos
 
 .NOTES
     Requires AUTH_TOKEN environment variable to be set with a GitLab personal access token.
@@ -30,7 +36,10 @@ param(
     [string]$Group,
 
     [Parameter(Mandatory=$false)]
-    [string]$GitLabDomain = "https://gitlab.com"
+    [string]$GitLabDomain = "https://gitlab.com",
+
+    [Parameter(Mandatory=$false)]
+    [switch]$IncludeAllRepos
 )
 
 # Validate AUTH_TOKEN
@@ -44,7 +53,9 @@ $cloneProtocol = if ($env:CLONE_PROTOCOL -eq "ssh") { "ssh" } else { "https" }
 
 # Build base request URL
 if ([string]::IsNullOrEmpty($Group)) {
-    $baseUrl = "$GitLabDomain/api/v4/projects?simple=true&archived=false"
+    # Limit to projects the user is a member of unless -IncludeAllRepos was passed
+    $membership = if ($IncludeAllRepos) { "" } else { "membership=true&" }
+    $baseUrl = "$GitLabDomain/api/v4/projects?${membership}simple=true&archived=false"
 } else {
     $baseUrl = "$GitLabDomain/api/v4/groups/$Group/projects?include_subgroups=true&simple=true&archived=false"
 }

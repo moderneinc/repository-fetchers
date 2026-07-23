@@ -129,20 +129,25 @@ This script fetches all repositories from a GitLab instance or a specific group 
 
 #### Usage
 ```sh
-./gitlab.sh [-g <group>] [-h <gitlab_domain>]
+./gitlab.sh [-g <group>] [-h <gitlab_domain>] [-a]
 ```
 
 #### Description
-This script fetches all repositories from a GitLab instance or a specific group within a GitLab instance. The `AUTH_TOKEN` environment variable must be set for authentication. The `-g` option specifies a group to fetch repositories from. The `-h` option specifies the GitLab domain (defaults to `https://gitlab.com` if not provided).
+This script fetches all repositories from a GitLab instance or a specific group within a GitLab instance. The `AUTH_TOKEN` environment variable must be set for authentication. The `-g` option specifies a group to fetch repositories from. The `-h` option specifies the GitLab domain (defaults to `https://gitlab.com` if not provided). The `-a` option includes all repos (see below).
 
 **Note**: If your GitLab instance is installed at a subpath (e.g., `https://git.mycompany.com/gitlab/`), include the full URL with the subpath in the `-h` option.
 
-**Note**: When no group is specified, the script returns every project visible to your token. On a large instance this includes all public and internal projects, not just ones you are a member of, and can be a very large result set. Specify a group to scope the output.
+**Note**: When no group is specified, the query is limited to projects you are a member of (`membership=true`). If that returns fewer repositories than you expect — for example because your access comes from project visibility, admin rights, or a group/project access token rather than a membership role — pass `-a` (PowerShell: `-IncludeAllRepos`) to return every project visible to your token instead. On a large instance that includes all public and internal projects and can be a very large result set, so prefer scoping with `-g` where you can.
 
 #### Examples
-To fetch all accessible repositories from gitlab.com:
+To fetch the repositories you are a member of from gitlab.com:
 ```sh
 AUTH_TOKEN=YOUR_TOKEN ./gitlab.sh
+```
+
+To fetch every repository visible to your token:
+```sh
+AUTH_TOKEN=YOUR_TOKEN ./gitlab.sh -a
 ```
 
 To fetch all repositories from a specific group on gitlab.com:
@@ -167,8 +172,10 @@ AUTH_TOKEN=YOUR_TOKEN ./gitlab.sh -h https://git.mycompany.com/gitlab -g team
 ```powershell
 $env:AUTH_TOKEN = "YOUR_TOKEN"
 .\gitlab.ps1 -Group my-group -GitLabDomain https://my-gitlab.com
-# Without group (all projects visible to the token):
+# Without group (projects you are a member of):
 .\gitlab.ps1
+# Without group, every project visible to the token:
+.\gitlab.ps1 -IncludeAllRepos
 ```
 
 #### Optional Environment Variables
