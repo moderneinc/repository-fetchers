@@ -23,6 +23,9 @@ param(
     [string]$BitbucketUrl
 )
 
+# Strip any trailing slash(es) to avoid malformed request URLs (e.g. .../stash//rest/...)
+$BitbucketUrl = $BitbucketUrl -replace '/+$', ''
+
 # Validate AUTH_TOKEN
 if ([string]::IsNullOrEmpty($env:AUTH_TOKEN)) {
     Write-Error "Please set the AUTH_TOKEN environment variable."

@@ -6,7 +6,8 @@ if [ -z "$1" ]; then
     exit 1
 fi
 
-bitbucket_url=$1
+# Strip any trailing slash(es) to avoid malformed request URLs (e.g. .../stash//rest/...)
+bitbucket_url=$(echo "$1" | sed 's:/*$::')
 
 if [ -z "$AUTH_TOKEN" ]; then
     echo "Please set the AUTH_TOKEN environment variable."
