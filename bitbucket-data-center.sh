@@ -6,7 +6,7 @@ if [ -z "$1" ]; then
     exit 1
 fi
 
-# Strip any trailing slash(es) to avoid malformed request URLs (e.g. .../stash//rest/...)
+# Strip any trailing slashes
 bitbucket_url=$(echo "$1" | sed 's:/*$::')
 
 if [ -z "$AUTH_TOKEN" ]; then
