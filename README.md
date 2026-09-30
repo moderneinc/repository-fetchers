@@ -98,25 +98,41 @@ This script fetches all repositories from a Bitbucket Cloud workspace.
 
 #### Usage
 ```sh
-./bitbucket-cloud.sh -u username -p password <workspace>
+./bitbucket-cloud.sh -t <token> [-e <email>] <workspace>
 ```
 
 #### Description
-This script fetches all repositories from the specified Bitbucket Cloud workspace. Authentication is provided via the `-u` (username) and `-p` (app password) options, or via the `BITBUCKET_USERNAME` and `BITBUCKET_APP_PASSWORD` environment variables.
+This script fetches all repositories from the specified Bitbucket Cloud workspace. It accepts either kind of Bitbucket Cloud token:
+
+- **API token**: created under your Atlassian account settings with the `read:repository:bitbucket` scope. Pass it with the email address of your Atlassian account (`-e`), and it is sent using Basic auth.
+- **Workspace access token**: created in the workspace settings with the `Repositories: Read` permission. Omit the email, and it is sent as a Bearer token.
+
+| Option | Environment variable | Description                                                  |
+|--------|----------------------|--------------------------------------------------------------|
+| `-t`   | `BITBUCKET_TOKEN`    | API token or workspace access token (required)               |
+| `-e`   | `BITBUCKET_EMAIL`    | Atlassian account email, required only for API tokens        |
 
 #### Example
 
 **Linux/macOS (Bash):**
 ```sh
-./bitbucket-cloud.sh -u YOUR_USERNAME -p APP_PASSWORD myworkspace
+# API token
+./bitbucket-cloud.sh -t YOUR_API_TOKEN -e you@example.com myworkspace
+# Workspace access token
+./bitbucket-cloud.sh -t YOUR_WORKSPACE_TOKEN myworkspace
+# Or using environment variables:
+BITBUCKET_TOKEN=YOUR_API_TOKEN BITBUCKET_EMAIL=you@example.com ./bitbucket-cloud.sh myworkspace
 ```
 
 **Windows (PowerShell):**
 ```powershell
-.\bitbucket-cloud.ps1 -Workspace myworkspace -Username YOUR_USERNAME -AppPassword APP_PASSWORD
+# API token
+.\bitbucket-cloud.ps1 -Workspace myworkspace -Token YOUR_API_TOKEN -Email you@example.com
+# Workspace access token
+.\bitbucket-cloud.ps1 -Workspace myworkspace -Token YOUR_WORKSPACE_TOKEN
 # Or using environment variables:
-$env:BITBUCKET_USERNAME = "YOUR_USERNAME"
-$env:BITBUCKET_APP_PASSWORD = "APP_PASSWORD"
+$env:BITBUCKET_TOKEN = "YOUR_API_TOKEN"
+$env:BITBUCKET_EMAIL = "you@example.com"
 .\bitbucket-cloud.ps1 -Workspace myworkspace
 ```
 

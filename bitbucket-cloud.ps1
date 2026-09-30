@@ -9,20 +9,23 @@
 .PARAMETER Workspace
     The Bitbucket Cloud workspace name (required)
 
-.PARAMETER Username
-    Bitbucket username. Can also be set via BITBUCKET_USERNAME environment variable.
+.PARAMETER Token
+    Bitbucket API token or workspace access token. Can also be set via BITBUCKET_TOKEN environment variable.
 
-.PARAMETER AppPassword
-    Bitbucket app password. Can also be set via BITBUCKET_APP_PASSWORD environment variable.
+.PARAMETER Email
+    Atlassian account email. Required for API tokens, omit for workspace access tokens.
+    Can also be set via BITBUCKET_EMAIL environment variable.
 
 .EXAMPLE
-    .\bitbucket-cloud.ps1 -Workspace myworkspace -Username myuser -AppPassword mypassword
-    $env:BITBUCKET_USERNAME = "myuser"
-    $env:BITBUCKET_APP_PASSWORD = "mypassword"
+    .\bitbucket-cloud.ps1 -Workspace myworkspace -Token mytoken -Email me@example.com
+    .\bitbucket-cloud.ps1 -Workspace myworkspace -Token myworkspacetoken
+    $env:BITBUCKET_TOKEN = "mytoken"
+    $env:BITBUCKET_EMAIL = "me@example.com"
     .\bitbucket-cloud.ps1 -Workspace myworkspace
 
 .NOTES
-    Requires Bitbucket app password (not regular password).
+    With -Email, the token is sent as an API token using Basic auth. Without it, the token
+    is sent as a workspace access token using Bearer auth.
     Optionally set CLONE_PROTOCOL environment variable to "ssh" for SSH URLs (default is https).
 #>
 
@@ -31,35 +34,42 @@ param(
     [string]$Workspace,
 
     [Parameter(Mandatory=$false)]
-    [string]$Username,
+    [string]$Token,
 
     [Parameter(Mandatory=$false)]
-    [string]$AppPassword
+    [string]$Email
 )
 
 # Fall back to environment variables if not provided
-if ([string]::IsNullOrEmpty($Username)) {
-    $Username = $env:BITBUCKET_USERNAME
+if ([string]::IsNullOrEmpty($Token)) {
+    $Token = $env:BITBUCKET_TOKEN
 }
 
-if ([string]::IsNullOrEmpty($AppPassword)) {
-    $AppPassword = $env:BITBUCKET_APP_PASSWORD
+if ([string]::IsNullOrEmpty($Email)) {
+    $Email = $env:BITBUCKET_EMAIL
 }
 
 # Validate required parameters
-if ([string]::IsNullOrEmpty($Username) -or [string]::IsNullOrEmpty($AppPassword)) {
-    Write-Error "Error: Please provide username and app password via parameters or environment variables."
-    Write-Host "Usage: .\bitbucket-cloud.ps1 -Workspace <workspace> -Username <username> -AppPassword <password>"
+if ([string]::IsNullOrEmpty($Token)) {
+    Write-Error "Error: Please provide a token via parameters or environment variables."
+    Write-Host "Usage: .\bitbucket-cloud.ps1 -Workspace <workspace> -Token <token> [-Email <email>]"
+    Write-Host "Note: Use -Email with API tokens, omit it for workspace access tokens"
     exit 1
 }
 
 # Determine clone protocol
 $cloneProtocol = if ($env:CLONE_PROTOCOL -eq "ssh") { "ssh" } else { "https" }
 
-# Set up Basic auth header
-$base64Auth = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("${Username}:${AppPassword}"))
-$headers = @{
-    Authorization = "Basic $base64Auth"
+# Use Basic auth with email for API tokens, Bearer for workspace access tokens
+if (-not [string]::IsNullOrEmpty($Email)) {
+    $base64Auth = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("${Email}:${Token}"))
+    $headers = @{
+        Authorization = "Basic $base64Auth"
+    }
+} else {
+    $headers = @{
+        Authorization = "Bearer $Token"
+    }
 }
 
 # Output CSV header
@@ -102,9 +112,6 @@ while (-not [string]::IsNullOrEmpty($nextPage)) {
         Write-Output "$cleanUrl,$branchName,$origin,$path"
     }
 
-    # Get next page URL (remove embedded credentials)
+    # Get next page URL
     $nextPage = $response.next
-    if (-not [string]::IsNullOrEmpty($nextPage)) {
-        $nextPage = $nextPage -replace "${Username}@", ''
-    }
 }
