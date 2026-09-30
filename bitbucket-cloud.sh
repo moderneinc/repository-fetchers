@@ -3,7 +3,7 @@
 usage() {
   echo "Usage: $0 -t <token> [-e <email>] <workspace>"
   echo "Alternative: Set BITBUCKET_TOKEN and optionally BITBUCKET_EMAIL environment variables"
-  echo "Note: Use email with API tokens, omit for workspace tokens"
+  echo "Note: Use email with API tokens, omit for workspace access tokens"
   exit 1
 }
 
@@ -43,7 +43,7 @@ echo "cloneUrl,branch,origin,path"
 next_page="https://api.bitbucket.org/2.0/repositories/$workspace"
 
 while [ "$next_page" ]; do
-  # Use basic auth with email for API tokens, Bearer for workspace tokens
+  # Use basic auth with email for API tokens, Bearer for workspace access tokens
   if [ -n "$email" ]; then
     response=$(curl -s -u "$email:$token" "$next_page")
   else
