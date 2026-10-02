@@ -24,7 +24,7 @@ while getopts ":g:h:a" opt; do
             echo "                    can be a very large result set."
             echo ""
             echo "Environment variables:"
-            echo "  AUTH_TOKEN       Required. Your GitLab personal access token"
+            echo "  AUTH_TOKEN       Required. GitLab access token with the read_api scope"
             echo ""
             echo "Examples:"
             echo "  # Fetch projects you are a member of from gitlab.com"

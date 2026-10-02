@@ -14,7 +14,7 @@
     .\bitbucket-data-center.ps1 -BitbucketUrl https://my-bitbucket.com/stash
 
 .NOTES
-    Requires AUTH_TOKEN environment variable to be set with a Bitbucket personal access token.
+    Requires AUTH_TOKEN environment variable to be set with a Bitbucket HTTP access token with Repository read permission.
     Optionally set CLONE_PROTOCOL environment variable to "ssh" for SSH URLs (default is http).
 #>
 

@@ -51,6 +51,15 @@ This script fetches all repositories from the specified GitHub organization.
 
 (**Note**: if you use a GitHub installation rather than `github.com` you will have to `gh auth login --hostname github.mycompany.com`)
 
+##### Token requirements
+The script lists repositories with `GET /orgs/{org}/repos`, so it only returns the repositories the authenticated user can see in the organization.
+
+- **`gh auth login`**: the default scopes are sufficient.
+- **Classic personal access token**: needs the `repo` scope. Without it only public repositories are returned.
+- **Fine-grained personal access token**: set the resource owner to the organization and grant access to all repositories (or the ones you want listed). The `Metadata: Read-only` repository permission that GitHub adds automatically is enough to list them; add `Contents: Read-only` if you also clone with this token. Your organization may need to approve the token before it can be used.
+
+If the organization enforces SAML single sign-on, the token must also be authorized for that organization.
+
 #### Example
 
 **Linux/macOS (Bash):**
@@ -74,7 +83,10 @@ This script fetches all repositories from a Bitbucket Data Center instance.
 ```
 
 #### Description
-This script fetches all repositories from the specified Bitbucket Data Center URL. If the `AUTH_TOKEN` environment variable is set, it will be used for authentication.
+This script fetches all repositories from the specified Bitbucket Data Center URL. The `AUTH_TOKEN` environment variable must be set for authentication.
+
+##### Token requirements
+`AUTH_TOKEN` must be an HTTP access token with **Repository read** permission. A token never exceeds the permissions of its owner, so a personal token lists only the repositories that user can read. Project and repository HTTP access tokens also work, but only list the repositories in their own project or repository.
 
 #### Example
 
@@ -151,6 +163,14 @@ This script fetches all repositories from a GitLab instance or a specific group 
 #### Description
 This script fetches all repositories from a GitLab instance or a specific group within a GitLab instance. The `AUTH_TOKEN` environment variable must be set for authentication. The `-g` option specifies a group to fetch repositories from. The `-h` option specifies the GitLab domain (defaults to `https://gitlab.com` if not provided). The `-a` option includes all repos (see below).
 
+##### Token requirements
+`AUTH_TOKEN` can be a personal access token, a group access token, or a project access token. It needs:
+
+- **Scope**: `read_api`. The script only calls the REST API, so `read_repository` alone is not enough, and the broader `api` scope is not needed.
+- **Role**: at least **Reporter** on the projects you want listed. Guests can see a private project, but GitLab omits its default branch from the API response, so the `branch` column comes back empty. Reporter is also the minimum role needed to clone the repositories afterwards.
+
+A group access token only sees the projects in its group and subgroups, and a project access token only sees its own project.
+
 **Note**: If your GitLab instance is installed at a subpath (e.g., `https://git.mycompany.com/gitlab/`), include the full URL with the subpath in the `-h` option.
 
 **Note**: When no group is specified, the query is limited to projects you are a member of (`membership=true`). If that returns fewer repositories than you expect — for example because your access comes from project visibility, admin rights, or a group/project access token rather than a membership role — pass `-a` (PowerShell: `-IncludeAllRepos`) to return every project visible to your token instead. On a large instance that includes all public and internal projects and can be a very large result set, so prefer scoping with `-g` where you can.
@@ -216,6 +236,9 @@ One Organization has multiple Projects, which each can contain multiple Reposito
 1. Azure CLI installed, via Brew `brew install azure-cli` or WinGet `winget install Microsoft.AzureCLI`
 2. Azure DevOps Extension added, via Azure CLI `az extension add --name azure-devops`
 3. Azure CLI must be logged in `az login` and user has access to the organization and project
+   - The user needs the **Basic** access level; Stakeholder access does not include Azure Repos in private projects.
+   - The user needs **Read** permission on the project's Git repositories, which the project's built-in Readers group grants.
+   - Instead of `az login`, you can set the `AZURE_DEVOPS_EXT_PAT` environment variable to a personal access token with the **Code (Read)** scope.
 
 #### Example
 
