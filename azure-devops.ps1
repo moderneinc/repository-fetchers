@@ -21,7 +21,8 @@
 
 .NOTES
     Requires Azure CLI (az) to be installed and authenticated.
-    Run 'az login' and 'az extension add --name azure-devops' before using this script.
+    Run 'az login' (or set AZURE_DEVOPS_EXT_PAT to a token with the Code (Read) scope)
+    and 'az extension add --name azure-devops' before using this script.
 #>
 
 param(

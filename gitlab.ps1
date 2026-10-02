@@ -27,7 +27,7 @@
     .\gitlab.ps1 -IncludeAllRepos
 
 .NOTES
-    Requires AUTH_TOKEN environment variable to be set with a GitLab personal access token.
+    Requires AUTH_TOKEN environment variable to be set with a GitLab access token with the read_api scope.
     Optionally set CLONE_PROTOCOL environment variable to "ssh" for SSH URLs (default is https).
 #>
 

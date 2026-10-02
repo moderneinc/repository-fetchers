@@ -15,7 +15,7 @@
 
 .NOTES
     Requires GitHub CLI (gh) to be installed and authenticated.
-    Run 'gh auth login' before using this script.
+    Run 'gh auth login' before using this script, or set GITHUB_TOKEN to a token with the repo scope.
 #>
 
 param(
